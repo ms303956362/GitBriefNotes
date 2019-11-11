@@ -14,7 +14,7 @@
 
 ### 工作区、暂存区、仓库
 ![三个区域间的转换](/images/state.png)
-+ Git管理的是修改记录。`git diff`可查看工作区与暂存区区别，`git --cached`查看暂存区和仓库的区别。
++ Git管理的是修改记录。`git diff`可查看工作区与暂存区区别，`git diff --cached`查看暂存区和仓库的区别。
 + 修改工作区文件后，`git diff`显示差异。`git add <file>`后工作区修改同步到暂存区，`git diff`无差异。
 + 未提交修改时，`git diff --cached`有差异。`git commit -m <comment>`提交了修改，`git diff --cached`无差异。
 
