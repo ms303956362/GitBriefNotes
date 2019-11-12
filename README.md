@@ -39,6 +39,7 @@
   + 如果已经提交，可采用[版本回退](#版本回退)的方法。
 
 ## 远程仓库
+### 生成SSH密钥
 1. 打开git，`ssh-keygen -t rsa -C "youremail@mail.com"`，然后一直回车，生成私钥`id_rsa`和公钥`id_rsa.pub`，即SSH所需的密钥对。
 2. 登录Github，打开账户Setting里的SSH Keys。
 3. 用记事本打开`id_rsa.pub`文件，复制公钥，这样Github服务器就能通过公钥判别是否为秘钥持有者发送的消息。
@@ -53,3 +54,49 @@
 ### 克隆远程库
 + `git clone <origin> git@<server-name>:<user-name>/<repo-name>.git`
 + 上面是SSH方式，比较快，也可使用https的方式。
+
+## 分支管理
+### 创建分支和管理
++ 分支是提交的时间线，不创建新的分支时只有一条时间线`master`，`HEAD`指向`master`。<br>![只有一条分支](/images/branch1.png)<br>创建新的分支`dev`即创建了一个新的提交时间线,切换到新分支`dev`后`HEAD`指向`dev`。<br>![创建新分支](/images/branch2.png)<br>在新的分支中提交时只延长`dev`，不影响`master`分支。<br>![在新分支中提交](/images/branch3.png)<br>在新分支开发完成后，合并分支时直接将`master`指向`dev`。<br>![合并分支](/images/branch4.png)<br>最后删除分支，只剩下`master`分支。<br>![删除新分支](/images/branch5.png)<br>
++ 分支相关命令：
+  + 查看分支：`git branch`
+  + 创建分支：`git branch <branch-name>`
+  + 切换分支：`git checkout <branch-name>`或者`git switch <branch-name>`
+  + 创建+切换分支：`git checkout -b <branch-name>`或者`git switch -c <branch-name>`
+  + 合并`<brach-name>`分支到当前分支：`git merge <branch-name>`
+  + 删除分支：`git branch -d <branch-name>`
+
+### 解决冲突
++ 两个分支提交了相同位置的不同修改时出现冲突，`git merge <branch-name>`后提示冲突，并标在文件中。手动修改有冲突的地方，再提交合并完成。
++ `git log --graph`查看分支合并图。
+
+### 分支管理
++ 合并分支时使用`Fast forward`模式，删除分支后会丢失分支信息。可以加入`--no-ff`参数，这样主分支新建一个commit来合并，需要`-m`参数写入描述。
++ 开发时，`master`分支稳定，用于发布新版本，`dev`分支用于开发，是不稳定的，每个开发人又有自己的分支，向`dev`进行合并。
+
+### BUG修复
++ `dev`分支开发时工作区进行了修改但还没有提交，突然要先修复`master`一个BUG。如果直接切换到`master`建立`issue`分支修复，开发`dev`分支时的修改仍会在工作区中，则提交时会把`dev`工作区未完成的修改与BUG修复部分一同提交。
++ `dev`分支未完成修改时，先`git stash`，可保存工作现场并清空修改，完成BUG修改后回到`dev`分支再`git stash pop`恢复工作现场。
++ 将`master`修复的BUG应用到`dev`中，需要先`git cherry-pick <commit-id>`，再`git stash pop`。也就是先通过commit或stash清空工作区修改才能cherry-pick。
+
+### Feature分支
++ 开发新特性最好由`dev`新建一个分支。
++ 如果分支**已经commit**但是又不需要合并到`dev`了，此时在`dev`分支中按[创建分支和管理](#创建分支和管理)中删除分支的方法无法删除，应使用`git branch -D <branch-name>`强制删除。
+
+### 多人协作
++ 工作模式：
+  1. 首先，可以试图用`git push <origin> <branch-name>`推送自己的修改；
+  2. 如果推送失败，则因为远程分支比你的本地更新，需要先用`git pull`试图合并；
+  3. 如果合并有冲突，则解决冲突，并在本地提交；
+  4. 没有冲突或者解决掉冲突后，再用`git push <origin> <branch-name>`推送就能成功！
++ 相关命令：
+  + 查看远程库信息，使用`git remote -v`；
+  + 本地新建的分支如果不推送到远程，对其他人就是不可见的；
+  + 从本地推送分支，使用`git push origin <branch-name>`，如果推送失败，先用`git pull`抓取远程的新提交；
+  + 在本地创建和远程分支对应的分支，使用`git checkout -b <branch-name> <origin>/<branch-name>`，本地和远程分支的名称最好一致；
+  + 建立本地分支和远程分支的关联，使用`git branch --set-upstream <branch-name> <origin>/<branch-name>`；
+  + 从远程抓取分支，使用`git pull`，如果有冲突，要先处理冲突。
+
+### 变基
++ 变基`git rebase`
++ 参考[Git rebase文档](https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%8F%98%E5%9F%BA)和[Git rebase详解](https://www.cnblogs.com/pinefantasy/articles/6287147.html)
